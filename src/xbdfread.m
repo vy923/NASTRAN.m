@@ -25,8 +25,8 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
 %}
 
 % Prevent getting error from bdfscan if last file line is nonempty
-	if isstring(A)      A(end+1) = "";
-	elseif iscell(A)    A{end+1} = '';
+	if isstring(A),     A(end+1) = "";
+	elseif iscell(A),   A{end+1} = '';
     end
     
 % Convert to char is string or cell
@@ -39,8 +39,8 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
         if ~iscell(outFields)                                               % Convert from matrix format to cell of indices, if it is a logical array
             isbool = all(ismember(outFields(:),[0,1]));
             for i = 1:size(outFields,1)
-                if isbool   tmp{i} = find(outFields(i,:));                  % Each row of logical values corresponds to a line of the card
-                else        tmp{i} = outFields(i,:);
+                if isbool,  tmp{i} = find(outFields(i,:));                  % Each row of logical values corresponds to a line of the card
+                else,       tmp{i} = outFields(i,:);
                 end
             end
             outFields = tmp;
@@ -53,7 +53,7 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
 	[empt,outf] = cardfields(card,outFields);
 
 % Search file - find line indices of the required card
-	maskA = startsWith(A,card);
+    maskA = startsWith(A,card);
     indA  = find(maskA);
 
 % Extract continuation line indices, if any matching cards are found 
@@ -113,7 +113,7 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
         for line = 1:numel(outf)                                            % Loop over the requested card lines
         
             lfs = outf{line};                                               % field indices for the current iteration                                                  
-            if isempty(lfs)|size(maskQ,2)<line                              % Skip to next iteration if no field of 'line' is requried
+            if isempty(lfs) || size(maskQ,2)<line                           % Skip to next iteration if no field of 'line' is requried
                 continue
             end
         
@@ -137,9 +137,9 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
                 if atmpN                                                            % Read from normal continuation lines
                     R(tmpN,colR) = str2val(AtmpN(:,f8{lfs(pos)}),emf(colR));        
                 end
-                if atmpS & lfs(pos)<=5                                              % 1st part of long lines
+                if atmpS && lfs(pos)<=5                                             % 1st part of long lines
                     R(tmpS,colR) = str2val(AtmpS1(:,f16{lfs(pos)}),emf(colR));      
-                elseif atmpS & lfs(pos)>5                                           % 2nd part
+                elseif atmpS && lfs(pos)>5                                          % 2nd part
                     R(tmpS,colR) = str2val(AtmpS2(:,f16{lfs(pos)-4}),emf(colR));	% Updated from lfs(pos-4) [3/3/2018]  
                 end                 
             end
@@ -149,6 +149,9 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
 % ----- Prepare RBE2 for reading. Only works with 8-char wide fields -----
     else 
         
+    % Allocate to avoid output errors
+        maskQ = missing;                                                    % MOD 15.02.23 / bdfread -> xbdfread in NGBA03 reductions script
+
     % Verify no (*)-lines are present
         if any(maskS(:))
             error('|>| Long field lines present in RBE2, syntax not implemented |<|')    
@@ -166,9 +169,9 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
             indN{q} = indm; 
             
             datm    = padf(datm,72);                                        % Convert to char and expand/truncate to 72 fields
-           	datm    = datm(:,9:size(datm,2),:);
+            datm    = datm(:,9:size(datm,2),:);
             datm    = reshape(datm,size(datm,1),size(datm,2)*size(datm,3));
-          	datN{q} = reshape(datm',8,numel(datm)/8)';
+            datN{q} = reshape(datm',8,numel(datm)/8)';
         end  
 
 	% Read the RBE2 data onto a cell array
@@ -190,9 +193,9 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
                 rbeNum = rbeNum+1;
             end  
         end % Loop through datN entries  
-        
+
     end % if ~any(contains({'RBE2','RBE3'},card))
-    
+
 end % xbdfread 
 
 
@@ -205,61 +208,61 @@ function [emptyVals,outFields] = cardfields(card,outFields)
 % Output data - comments refer to the 'default' fields only
 switch card
     case 'CBAR'                                                             % ID, PID, G1, G2
-        default = {[2:5]};
+        default = {2:5};
         emptyField = NaN(2,9);    
 	case 'CBEAM'                                                            % ID, PID, G1, G2
-        default = {[2:5]};
+        default = {2:5};
         emptyField = NaN(3,9); 
     case 'CBUSH'                                                            % ID, PID, G1, G2, CID
         default = {[2:5 9]};
         emptyField = NaN(2,9);
     case 'CHEXA'                                                            % ID, PID, G1:G8
-        default = {[2:9];[2:3]};
+        default = {2:9; 2:3};
         emptyField = NaN(3,9);
     case 'CONM2'                                                            % ID, G1, CID, M, Iij(ij = 11,21,22,31,32,33)
-        default = {[2:5];[2:7]};
+        default = {2:5; 2:7};
         emptyField = NaN(2,9);
     case 'CORD2R'                                                           % CID, CID2, A1:A3, B1:B3, C1:C3
-        default = {[2:9];[2:4]};
+        default = {2:9; 2:4};
         emptyField = [NaN NaN 1 NaN(1,6); NaN(1,9)];        
     case 'CQUAD4'                                                           % ID, PID, G1, G2, G3, G4
-        default = {[2:7]};
+        default = {2:7};
         emptyField = NaN(2,9);     
     case 'CROD'                                                             % ID, PID, G1, G2
-        default = {[2:5]};
+        default = {2:5};
         emptyField = NaN(1,9);         
     case 'CTRIA3'                                                           % ID, PID, G1, G2, G3
-        default = {[2:6]};
+        default = {2:6};
         emptyField = NaN(2,9);    
     case 'GRID'                                                             % ID, CID, X, Y, Z
         default	= {[2 3:6]};
         emptyField = [NaN NaN 1 NaN(1,6)];
     case 'MAT1'                                                             % ID, E, G, nu, rho
-        default = {[2:6]};                                                  
+        default = {2:6};                                                  
         emptyField = [NaN(2,9)];
     case 'MAT8'                                                             % ID, E1, E2, nu12, G12, G1z, G2z, rho
-        default = {[2:9]};                                                  
+        default = {2:9};                                                  
         emptyField = [NaN(3,9)];
     case 'MAT9'                                                             % ID, Gij(i=1:6,j=1:6,i>=j), rho
-        default = {[2:9];[2:9];[2:8]};                                      
+        default = {2:9; 2:9; 2:8};                                      
         emptyField = [NaN(4,9)];        
     case 'PBARL'                                                            % ID, matID, type // dim1, dim2, ..., NSM
-        default = {[2:3];[2:3]};
+        default = {2:3; 2:3};
         emptyField = [NaN(2,9)];    
     case 'PBEAML'                                                           % ID, matID // dim1, dim2
-        default = {[2:3];[2:3]};
+        default = {2:3; 2:3};
         emptyField = [NaN(2,9)];         
     case 'PBUSH'                                                            % ID, K1:K6
         default = {[2 4:9]};                                                
         emptyField = [NaN(4,9)];
     case 'PROD'                                                             % ID, matID, Area, J, C, NSM
-        default = {[2:7]};
+        default = {2:7};
         emptyField = [NaN(1,9)];          
     case 'PSHELL'                                                           % ID, matID1, t, matID2, 12I/T3, matID3, TS/T, NSM
-        default = {[2:9]};
+        default = {2:9};
         emptyField = [NaN(2,9)];
     case 'PSOLID'                                                           % ID, matID, cordM, IN, STRESS, ISOP
-        default = {[2:7]};
+        default = {2:7};
         emptyField = [NaN(1,9)];
     case 'RBE2'
         outFields = [];
@@ -271,7 +274,7 @@ end % SWICTH card
 
 % Set output to default if custom is not required
     try     outFields(1);
-    catch   outFields = default;
+    catch,  outFields = default;
     end   
     
     % Get the default empty values corresponding to outFields
@@ -307,18 +310,18 @@ end
 
 % Faster than pad, can also truncate the char array
 function str = padf(str,w)
-    if ~exist('w','var')    w = 72;                 end                     % Set desired char array width
-    if ~ischar(str)         str = char(str);        end                     % Convert to char array
+    if ~exist('w','var'),       w = 72;             end                     % Set desired char array width
+    if ~ischar(str),            str = char(str);    end                     % Convert to char array
 
 	if size(str,2)==w                                                       % Do nothing
         return
     elseif size(str,2)<w                                                    % Expand to 72 fields per line, if less
-        if      ndims(str)==2 	str(:,size(str,2)+1:w) = ' ';               % Faster than (:,~,:)
-        elseif  ndims(str)==3 	str(:,size(str,2)+1:w,:) = ' ';
+        if      ismatrix(str), 	str(:,size(str,2)+1:w) = ' ';               % Faster than (:,~,:)
+        elseif  ndims(str)==3, 	str(:,size(str,2)+1:w,:) = ' ';
         end
     else                                                                    % Remove anything after char 72, if lines are longer
-        if      ndims(str)==2	str(:,w+1:end) = '';
-        elseif  ndims(str)==3   str(:,w+1:end,:) = '';
+        if      ismatrix(str),	str(:,w+1:end) = '';
+        elseif  ndims(str)==3,  str(:,w+1:end,:) = '';
         end
 	end
 end

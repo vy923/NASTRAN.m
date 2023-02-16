@@ -21,7 +21,7 @@ function arr = cvec(arr,opt,clr)
   	if ~exist('clr','var')      clr = 0;       	end  
  
 % Main function
-    if ndims(arr)==2 & any(size(arr)==1) 
+    if ismatrix(arr) && any(size(arr)==1) 
         if size(arr,1)==1   arr = arr.';
         end
     elseif opt

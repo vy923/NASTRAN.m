@@ -6,13 +6,13 @@ function str = int2field(vec,padfield,whitespace,N)
 %}
 
 % Input variable defaults 
-	if ~exist('padfield','var') | isempty(padfield)         padfield    = true;  	end  
-	if ~exist('whitespace','var') | isempty(whitespace)     whitespace  = false;   	end
-    if ~exist('N','var') | isempty(N)                       N = 8;                  end
+	if ~exist('padfield','var') || isempty(padfield),       padfield = true;  	    end  
+	if ~exist('whitespace','var') || isempty(whitespace),   whitespace = false;   	end
+    if ~exist('N','var') || isempty(N),                     N = 8;                  end
     
 % Convert to int first for faster num2str
-    if N>=9     str = num2str(int64(vec),'%-u'); 
-    else       	str = num2str(int32(vec),'%-u'); 
+    if N>=9,    str = num2str(int64(vec),'%-u'); 
+    else,      	str = num2str(int32(vec),'%-u'); 
     end
 
 % Add whitespace to the left
