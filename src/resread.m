@@ -30,6 +30,7 @@ CHANGES
 
 PENDING
     - (1.0) fix chk=2 / static solutions not working, spec. pageval calc
+    - DOESN'T WORK FOR PHASE...
 %} 
 
     if regexpi(card,'disp')     chk = 1;	card = [repmat(' ',1,39) 'C O M P L E X   D I S P L A C E M E N T   V E C T O R'];                            	end
@@ -65,7 +66,7 @@ PENDING
         fmx = ['%*s%*s%f'];
         fmt	= ['%*f%f%*s' repmat('%f%f%f%f%f%f%*[^\n]\n',1,2)]; 
     elseif chk == 2
-     	off = [3,1,4];                                                      % MOD 27.10.21 [3,1,3] -> [3,1,4]
+     	off = [4,1,4];                                                      % MOD 27.10.21 [3,1,3] -> [3,1,4] / 12.02.24 -> [4,1,4]
         fmx = ['%*s%*s%f' repmat('%*s',1,sum(char(card)~=' ')) '%f'];
      	fmt	= ['%f%*s' '%f%f%f%f%f%f'];
     end
@@ -102,7 +103,7 @@ PENDING
 
 % Final line of each block; matrix is logical, so 1 byte per entry 
 	[~,ind]  = max(blockEnd>blockStart');
-	blockEnd = blockEnd(ind);
+	blockEnd = blockEnd(ind)
     
 % Check if block coordinates are correct
     if length(blockEnd)~=length(blockStart)

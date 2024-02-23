@@ -1,4 +1,4 @@
-function [U] = MODSUP(X,m,k,Fw,omega,zeta)
+function U = MODSUP(X,m,k,Fw,omega,zeta)
 
 %{
     > Assuming mass-normalised vectors, X'*M*X = I and X'*K*X = diag(lam0)
@@ -43,16 +43,7 @@ function [U] = MODSUP(X,m,k,Fw,omega,zeta)
             error('size(Fw,2) must equal 1 or numel(omega)')                % Interpolation of input load before calling MODSUP can be used
     end
 
-%{
-% Modal solution, damped and undamped, naiive implementation
-    for i = 1:length(omega)
-        KSIw(:,i) = f(:,i)./(k - m*omega(i)^2);
-        KSIc(:,i) = f(:,i)./(k + im*b(:,i).*omega(i) - m*omega(i)^2);       % Assuming b(:,i) is either scalar or vector of size n
-    end
-%}
-
 % Modal solution, damped and undamped, KSI(mode,omega)
-%    KSIw1 = f./(k - m.*omega.^2);                                           % Vectorised. Note: usually m == 1   
     KSIc1 = f./(k + im*b.*omega - m.*omega.^2);                             % For % crit modal c = 2*m*omega*zeta = ccrit*zeta = ccrit*G/2
    
 % Modal superposition

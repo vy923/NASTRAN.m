@@ -97,9 +97,9 @@ function [M,SMset,dof] = REMSM(M,dof,SMset,type,scale)
                 M(:,indMs) = [];
             end
 
-            testVar         = size(mpc);                                    % MOD [22.4.21] added to break infinite while loops
-            mpc(indMPC,:)   = [];
-            dof(indMs)      = [];     
+            testVar        = size(mpc);                                     % MOD [22.4.21] added to break infinite while loops
+            mpc(indMPC,:)  = [];
+            dof(indMs)     = [];     
             
             if isempty(mpc)                                                 % End loop
                 break    
