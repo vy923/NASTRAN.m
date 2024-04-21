@@ -48,7 +48,7 @@ function [R,indA,maskQ,maskN,maskS,outf] = xbdfread(A,card,outFields)
     catch
         outFields = [];                                                     % If the var does not exist, default outputs are used 
     end
-    
+
 % Set default values for outFields if the read text field is empty
 	[empt,outf] = cardfields(card,outFields);
 
@@ -239,31 +239,31 @@ switch card
         emptyField = [NaN NaN 1 NaN(1,6)];
     case 'MAT1'                                                             % ID, E, G, nu, rho
         default = {2:6};                                                  
-        emptyField = [NaN(2,9)];
+        emptyField = NaN(2,9);
     case 'MAT8'                                                             % ID, E1, E2, nu12, G12, G1z, G2z, rho
         default = {2:9};                                                  
-        emptyField = [NaN(3,9)];
+        emptyField = NaN(3,9);
     case 'MAT9'                                                             % ID, Gij(i=1:6,j=1:6,i>=j), rho
         default = {2:9; 2:9; 2:8};                                      
-        emptyField = [NaN(4,9)];        
+        emptyField = NaN(4,9);        
     case 'PBARL'                                                            % ID, matID, type // dim1, dim2, ..., NSM
         default = {2:3; 2:3};
-        emptyField = [NaN(2,9)];    
+        emptyField = NaN(2,9);    
     case 'PBEAML'                                                           % ID, matID // dim1, dim2
         default = {2:3; 2:3};
-        emptyField = [NaN(2,9)];         
+        emptyField = NaN(2,9);         
     case 'PBUSH'                                                            % ID, K1:K6
         default = {[2 4:9]};                                                
-        emptyField = [NaN(4,9)];
+        emptyField = NaN(4,9);
     case 'PROD'                                                             % ID, matID, Area, J, C, NSM
         default = {2:7};
-        emptyField = [NaN(1,9)];          
+        emptyField = NaN(1,9);          
     case 'PSHELL'                                                           % ID, matID1, t, matID2, 12I/T3, matID3, TS/T, NSM
         default = {2:9};
-        emptyField = [NaN(2,9)];
+        emptyField = NaN(2,9);
     case 'PSOLID'                                                           % ID, matID, cordM, IN, STRESS, ISOP
         default = {2:7};
-        emptyField = [NaN(1,9)];
+        emptyField = NaN(1,9);
     case 'RBE2'
         outFields = [];
         emptyVals = [];

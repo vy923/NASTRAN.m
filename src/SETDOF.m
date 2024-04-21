@@ -10,8 +10,8 @@ function [dof] = SETDOF(dof,type,scale)
 %}
 
 % Set default type / scaling
-    if ~exist('type','var') | isempty(type)     type    = 'grid';   	end
-    if ~exist('scale','var')| isempty(scale)    scale   = 10;           end   
+    if ~exist('type','var')  || isempty(type)     type    = 'grid';   	end
+    if ~exist('scale','var') || isempty(scale)    scale   = 10;         end   
 
 % Convert the input to dof name vector 
     if  strcmpi(type,'grid')
@@ -19,7 +19,7 @@ function [dof] = SETDOF(dof,type,scale)
         if iscell(dof)
             for i = 1:size(dof,1)          
                 if isempty(dof{i,2})
-                    dof{i,2} = [1:6]';
+                    dof{i,2} = (1:6)';
                 else
                     dof{i,2} = unique(cell2mat(textscan(num2str(dof{i,2}),'%1f')));
                     dof{i,2} = setdiff(dof{i,2},[0 7:9]);

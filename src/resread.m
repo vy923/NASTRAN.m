@@ -1,4 +1,4 @@
-function [R,dat] = resread(A,card,quickSearch,emptyval)
+function [R,dat,S] = resread(A,card,quickSearch,emptyval)
 
 %{
     > Scans an f06 file and returns the type of output requested on 'card'
@@ -33,21 +33,28 @@ PENDING
     - DOESN'T WORK FOR PHASE...
 %} 
 
-    if regexpi(card,'disp')     chk = 1;	card = [repmat(' ',1,39) 'C O M P L E X   D I S P L A C E M E N T   V E C T O R'];                            	end
-    if regexpi(card,'acc')      chk = 1;    card = [repmat(' ',1,39) 'C O M P L E X   A C C E L E R A T I O N   V E C T O R'];                           	end
-    if regexpi(card,'oload')	chk = 1;    card = [repmat(' ',1,47) 'C O M P L E X   L O A D   V E C T O R'];                                           	end
-    if regexpi(card,'spcC')     chk = 1;    card = [repmat(' ',1,27) 'C O M P L E X   F O R C E S   O F   S I N G L E   P O I N T   C O N S T R A I N T'];	end
-    if regexpi(card,'mpcC')     chk = 1;    card = [repmat(' ',1,27) 'C O M P L E X   F O R C E S   O F   M U L T I P O I N T   C O N S T R A I N T'];      end
-    if regexpi(card,'vel')      chk = 1;    card = [repmat(' ',1,43) 'C O M P L E X   V E L O C I T Y   V E C T O R'];                                    	end
-    if regexpi(card,'vec')      chk = 2;    card = 'R E A L   E I G E N V E C T O R   N O .';                                                               end
-	if regexpi(card,'spcR')     chk = 2;    card = 'F O R C E S   O F   S I N G L E - P O I N T   C O N S T R A I N T';                                     end
-	if regexpi(card,'mpcR')     chk = 2;    card = 'F O R C E S   O F   M U L T I P O I N T   C O N S T R A I N T';                                         end
-    if regexpi(card,'txdd')     chk = 2;    card = [repmat(' ',1,44) 'A C C E L E R A T I O N    V E C T O R'];                                             end
+switch lower(card)
+    case 'disp',    chk = 1;	card = [repmat(' ',1,39) 'C O M P L E X   D I S P L A C E M E N T   V E C T O R'];
+    case 'acc',     chk = 1;    card = [repmat(' ',1,39) 'C O M P L E X   A C C E L E R A T I O N   V E C T O R'];
+    case 'oload',	chk = 1;    card = [repmat(' ',1,47) 'C O M P L E X   L O A D   V E C T O R'];
+    case 'spcc',    chk = 1;    card = [repmat(' ',1,27) 'C O M P L E X   F O R C E S   O F   S I N G L E   P O I N T   C O N S T R A I N T'];
+    case 'mpcc',    chk = 1;    card = [repmat(' ',1,27) 'C O M P L E X   F O R C E S   O F   M U L T I P O I N T   C O N S T R A I N T'];
+    case 'vel',     chk = 1;    card = [repmat(' ',1,43) 'C O M P L E X   V E L O C I T Y   V E C T O R'];
+    case 'vec',     chk = 2;    card = 'R E A L   E I G E N V E C T O R   N O .';
+    case 'spcr',    chk = 2;    card = 'F O R C E S   O F   S I N G L E - P O I N T   C O N S T R A I N T';
+    case 'mpcr',    chk = 2;    card = 'F O R C E S   O F   M U L T I P O I N T   C O N S T R A I N T';
+    case 'txdd',    chk = 2;    card = [repmat(' ',1,44) 'A C C E L E R A T I O N    V E C T O R'];
+    case 'apsd',    chk = 2;    card = ["A C C E L E R A T I O N    V E C T O R", " ( POWER SPECTRAL DENSITY FUNCTION )"];
+    case 'crms',    chk = 2;    card = ["A C C E L E R A T I O N    V E C T O R", "   ( CUMULATIVE ROOT MEAN SQUARE )  "];
+    case 'rms',     chk = 2;    card = ["A C C E L E R A T I O N    V E C T O R", "         ( ROOT MEAN SQUARE )       "];
+    otherwise
+        error("resread: unrecognised card")
+end
 
 % Default replacement of empty values / quickSearch request    
     if ~exist('emptyVal','var')     	emptyval    = NaN;          end
     if ~exist('quickSearch','var')    	quickSearch = true;         end  
-    if quickSearch~=1 | chk==2      	quickSearch = false;        end         
+    if quickSearch~=1 || chk==2      	quickSearch = false;        end         
     
 % Convert A to string to accelerate execution of some funcitons
     if iscell(A)    A = string(A);
@@ -63,11 +70,12 @@ PENDING
 % Formats and offsets for different cards
     if chk == 1
       	off = [4,1,5];
-        fmx = ['%*s%*s%f'];
+        fmx = '%*s%*s%f';
         fmt	= ['%*f%f%*s' repmat('%f%f%f%f%f%f%*[^\n]\n',1,2)]; 
     elseif chk == 2
      	off = [4,1,4];                                                      % MOD 27.10.21 [3,1,3] -> [3,1,4] / 12.02.24 -> [4,1,4]
-        fmx = ['%*s%*s%f' repmat('%*s',1,sum(char(card)~=' ')) '%f'];
+        %fmx = ['%*s%*s%f' repmat('%*s',1,sum(char(card(1))~=' ')) '%f'];   % < ----- WHY???
+        fmx = '%*s%*s%f';
      	fmt	= ['%f%*s' '%f%f%f%f%f%f'];
     end
 
@@ -81,6 +89,9 @@ PENDING
     flagS2  = "POINT-ID";
     flagMP  = "MAGNITUDE";                                                  % To identify (REAL/IMAG) or (MAGNITUDE/PHASE) output
     card    = string(card);                                                 % Char search is faster, but quickSearch requires a string
+
+    % Multirow cards
+    off(3) = off(3) + numel(card) - 1;
 
 % Find the initial and final line of each block
     if quickSearch
@@ -103,8 +114,16 @@ PENDING
 
 % Final line of each block; matrix is logical, so 1 byte per entry 
 	[~,ind]  = max(blockEnd>blockStart');
-	blockEnd = blockEnd(ind)
-    
+	blockEnd = blockEnd(ind);
+
+    % Multirow cards
+    mask = true & blockEnd;
+    for i = 2:numel(card)
+        mask = mask & [blockEnd(1:end-i+1)==blockEnd(i:end); false(i-1,1)];
+    end
+    blockEnd = blockEnd(mask);
+    blockStart = blockStart(mask);
+
 % Check if block coordinates are correct
     if length(blockEnd)~=length(blockStart)
         disp('WARNING: Inappropriate block termination flag')
@@ -118,8 +137,10 @@ PENDING
 	subcase = cell2mat(textscan(join(A(blockStart-off(3)-1,:)),'%*u%*s%f'));    % MOD 17.09.21
     complx  = contains(A(blockStart-off(1)+1),flagMP);                          % Real/Imag = false, Mag/Phase = true
 
-	if chk==2                                                               % MOD 28.10.21: temporary fix of (1.0)
-        pageval = subcase;  
+	if chk==2                                                                   % MOD 28.10.21: temporary fix of (1.0)
+        if isempty(pageval) 
+            pageval = subcase;
+        end
         tmpPar = 2; 
     end
     
@@ -174,8 +195,9 @@ PENDING
         end     
     
     elseif chk==2                                                           % MODDED - 22/1/19: LINE limit number is insufficiently high and responses are split in blocks
+
         subcs = unique(subcase);  
-        for i = 1:length(subcs)    
+        for i = 1:length(subcs)   
             [tmpID,idxTMP] = unique(pageval(subcase==subcs(i),2/tmpPar));   % MOD A: Added idxTMP to store indices of unique pageval values
             for j = 1:length(tmpID)  
               	Q(:,:,j) = cell2mat(S(subcase==subcs(i) & pageval(:,2/tmpPar)==tmpID(j)).');   % MOD B: Added transpose (.'). Works for split and full result blocks. 
@@ -186,10 +208,10 @@ PENDING
                 clearvars Q 
         end
         
-    end %Subcase loop
+    end % Subcase loop
         
     catch
-        disp('WARNING: Results assembly failed, R returned in cell format');
+        disp('WARNING:resread: results assembly failed, R returned in cell format');
         R = S;
     end
 

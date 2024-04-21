@@ -26,6 +26,8 @@ function A = pvdmig(adof,qdof,seID)
 % Add DMIG vector and remove final \n
     A = [A sprintf(['*' repmat(' ',1,7) '%-16u%-16u %.1E\n'], tmp')];
 
+%  ------------------------------------------------------------------------------------------------
+
 % Specify double precision
 %    A = strrep(A,'E+','D+');
 
